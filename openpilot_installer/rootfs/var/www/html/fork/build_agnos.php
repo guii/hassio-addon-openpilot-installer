@@ -45,15 +45,19 @@ if ($installer_binary === false) {
 file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Successfully loaded binary file: " . $binary_path . " (size: " . strlen($installer_binary) . " bytes)\n", FILE_APPEND);
 
 $username = $_GET["username"];
+$repo = isset($_GET["repo"]) ? $_GET["repo"] : "openpilot";  # Default to openpilot for backward compatibility
 $branch = $_GET["branch"];
 $loading_msg = $_GET["loading_msg"];
+
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Parameters: username=$username, repo=$repo, branch=$branch, loading_msg=$loading_msg\n", FILE_APPEND);
 
 if ($username == "") exit;  # discount assertions
 if ($loading_msg == "") exit;
 
 
 # Handle username replacement:
-$installer_binary = fill_in_arg(E, $username . "/openpilot.git", $installer_binary, "\0", "username");
+$installer_binary = fill_in_arg(E, $username . "/" . $repo . ".git", $installer_binary, "\0", "username");
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Using repo: $repo in git URL\n", FILE_APPEND);
 
 # Handle branch replacement (3 occurrences):
 $installer_binary = fill_in_arg(GOLDEN, $branch, $installer_binary, "\0", "branch");

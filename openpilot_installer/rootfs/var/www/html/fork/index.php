@@ -22,10 +22,11 @@ define("BASE_DIR", "/" . basename(__DIR__));
 function logData() {
     global $url;
     global $username;
+    global $repo_name;
     global $branch;
     date_default_timezone_set('America/Chicago');
 
-    $data = array("IP" => $_SERVER['REMOTE_ADDR'], "url" => $url, "username" => $username, "branch" => $branch, "is_neos" => IS_NEOS, "is_agnos" => IS_AGNOS, "is_wget" => IS_WGET, "user_agent" => USER_AGENT, "date" => date("Y-m-d_H:i:s",time()));
+    $data = array("IP" => $_SERVER['REMOTE_ADDR'], "url" => $url, "username" => $username, "repo" => $repo_name, "branch" => $branch, "is_neos" => IS_NEOS, "is_agnos" => IS_AGNOS, "is_wget" => IS_WGET, "user_agent" => USER_AGENT, "date" => date("Y-m-d_H:i:s",time()));
     $data = json_encode($data);
 
     $fp = fopen("log.txt", "a");
@@ -46,18 +47,31 @@ file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - URL: "
 
 // Safer URL parsing with error handling
 $parts = explode("/", $url);
-$username = isset($parts[0]) ? $parts[0] : "";
-$branch = isset($parts[1]) ? $parts[1] : "";
-$loading_msg = isset($parts[2]) ? $parts[2] : "";
 
-file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Parsed: username=$username, branch=$branch, loading_msg=$loading_msg\n", FILE_APPEND);
+// Handle both old and new URL formats
+if (count($parts) >= 3) {
+    // New format: username/repo/branch[/loading_msg]
+    $username = isset($parts[0]) ? $parts[0] : "";
+    $repo_name = isset($parts[1]) ? $parts[1] : "openpilot";
+    $branch = isset($parts[2]) ? $parts[2] : "";
+    $loading_msg = isset($parts[3]) ? $parts[3] : "";
+} else {
+    // Old format: username/branch[/loading_msg]
+    $username = isset($parts[0]) ? $parts[0] : "";
+    $repo_name = "openpilot"; // Default
+    $branch = isset($parts[1]) ? $parts[1] : "";
+    $loading_msg = isset($parts[2]) ? $parts[2] : "";
+}
+
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Parsed: username=$username, repo=$repo_name, branch=$branch, loading_msg=$loading_msg\n", FILE_APPEND);
 
 $username = substr(strtolower($username), 0, 39);  # max GH username length
+$repo_name = substr(trim($repo_name), 0, 100);  # reasonable limit for repo name
+$repo_name = $repo_name == "_" ? "openpilot" : $repo_name;
 $branch = substr(trim($branch), 0, 255);  # max GH branch
 $branch = $branch == "_" ? "" : $branch;
 $loading_msg = substr(trim($loading_msg), 0, 39);
 $supplied_loading_msg = $loading_msg != "";  # to print secret message
-$repo_name = "openpilot";  # TODO: repo name not yet supported for installation
 
 class Alias {
     public $name, $default_branch, $aliases, $repo, $loading_msg;
@@ -80,7 +94,7 @@ foreach ($aliases as $al) {
         $username = $al->name;
         if ($branch == "") $branch = $al->default_branch;  # if unspecified, use default
         if ($loading_msg == "") $loading_msg = $al->loading_msg;
-        if ($al->repo != "") $repo_name = $al->repo;  # in case the fork's name isn't openpilot and redirection doesn't work
+        if ($al->repo != "" && $repo_name == "openpilot") $repo_name = $al->repo;  # Only override if using default repo
         break;
     }
 }
@@ -96,10 +110,11 @@ $build_script = IS_NEOS ? "/build_neos.php" : "/build_agnos.php";
 if (IS_NEOS or IS_AGNOS or IS_WGET) {  # if NEOS or wget serve file immediately. commaai/stock if no username provided
     if ($username == "") {
         $username = "commaai";
+        $repo_name = "openpilot";
         $branch = DEFAULT_STOCK_BRANCH;
         $loading_msg = "openpilot";
     }
-    header("Location: " . BASE_DIR . $build_script . "?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    header("Location: " . BASE_DIR . $build_script . "?username=" . $username . "&repo=" . $repo_name . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
     return;
 }
 
@@ -127,12 +142,13 @@ echo '<h3 style="position: absolute; bottom: 0; left: 0; width: 100%; text-align
 if ($username == "") {
     echo '<h3 style="color: #30323D;">🎉 now supports comma three! 🎉<h3>';
     echo "</br><h2>Enter this URL on your device during setup with the format:</h2>";
-    echo "<h2><a href='" . BASE_DIR . "/sshane/SA-master'><span>" . WEBSITE_URL . BASE_DIR . "/username/branch</span></a></h2>";
+    echo "<h2><a href='" . BASE_DIR . "/sshane/openpilot/SA-master'><span>" . WEBSITE_URL . BASE_DIR . "/username/repo/branch</span></a></h2>";
     echo "</br><h3>Or complete the request on your desktop to download a custom installer.</h3>";
     exit;
 }
-
 echo '<h3>Given fork username: <a href="https://github.com/' . $username . '/' . $repo_name . '">' . $username . '</a></h3>';
+echo '<h3>Repository: <a href="https://github.com/' . $username . '/' . $repo_name . '">' . $repo_name . '</a></h3>';
+
 
 
 if ($branch != "") {
@@ -156,11 +172,11 @@ echo '<html>
 </html>';
 
 if(array_key_exists('download_neos', $_POST)) {
-    header("Location: " . BASE_DIR . "/build_neos.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    header("Location: " . BASE_DIR . "/build_neos.php?username=" . $username . "&repo=" . $repo_name . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
     exit;
 }
 if(array_key_exists('download_agnos', $_POST)) {
-    header("Location: " . BASE_DIR . "/build_agnos.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    header("Location: " . BASE_DIR . "/build_agnos.php?username=" . $username . "&repo=" . $repo_name . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
     exit;
 }
 ?>
