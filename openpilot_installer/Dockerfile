@@ -6,9 +6,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install required packages
 RUN apk add --no-cache \
-    nginx \
+    apache2 \
+    apache2-utils \
     php8 \
-    php8-fpm \
+    php8-apache2 \
     php8-opcache \
     php8-gd \
     php8-mysqli \
@@ -19,6 +20,7 @@ RUN apk add --no-cache \
     php8-phar \
     php8-openssl \
     php8-session \
+    php8-ctype \
     git
 
 # Copy root filesystem
@@ -33,10 +35,10 @@ RUN chmod 755 /var/www/html/fork \
     && chmod +x /etc/services.d/*/run
 
 # Create log directory
-RUN mkdir -p /var/log/nginx \
-    && mkdir -p /run/nginx \
-    && touch /var/log/nginx/error.log \
-    && touch /var/log/nginx/access.log
+RUN mkdir -p /var/log/apache2 \
+    && mkdir -p /run/apache2 \
+    && touch /var/log/apache2/error.log \
+    && touch /var/log/apache2/access.log
 
 # Labels
 LABEL \
