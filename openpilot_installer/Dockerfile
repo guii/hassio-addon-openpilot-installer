@@ -24,11 +24,6 @@ RUN apk add --no-cache \
 # Copy root filesystem
 COPY rootfs /
 
-# Copy openpilot-installer-generator files
-WORKDIR /var/www/html
-COPY fork /var/www/html/fork
-COPY source /var/www/html/source
-
 # Set proper permissions
 RUN chmod 755 /var/www/html/fork \
     && chmod 644 /var/www/html/fork/installer_openpilot_* \
