@@ -9,8 +9,12 @@ mkdir -p rootfs/var/www/html/source
 
 # Copy the original files
 echo "Copying original files..."
-cp -r ../fork/* rootfs/var/www/html/fork/
-cp -r ../source/* rootfs/var/www/html/source/
+cp -r ../../fork/* rootfs/var/www/html/fork/
+cp -r ../../source/* rootfs/var/www/html/source/
+
+# Explicitly copy the .htaccess file (hidden file)
+echo "Copying .htaccess file..."
+cp ../../fork/.htaccess rootfs/var/www/html/fork/
 
 # Replace index.php with our modified version
 echo "Using modified index.php..."

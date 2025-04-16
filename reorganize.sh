@@ -1,3 +1,31 @@
+#!/bin/bash
+
+# This script reorganizes the files to follow Home Assistant's add-on repository structure
+
+# Create the add-on directory if it doesn't exist
+mkdir -p openpilot_installer
+
+# Move files to the add-on directory
+mv Dockerfile openpilot_installer/
+mv config.yaml openpilot_installer/
+mv build.yaml openpilot_installer/
+mv README.md openpilot_installer/
+mv DOCS.md openpilot_installer/
+mv icon.txt openpilot_installer/
+mv .gitignore openpilot_installer/
+mv setup.sh openpilot_installer/
+
+# Move the rootfs directory
+mv rootfs openpilot_installer/
+
+# Move GitHub workflows
+mkdir -p openpilot_installer/.github/workflows
+mv .github/workflows/build.yaml openpilot_installer/.github/workflows/
+rmdir .github/workflows
+rmdir .github
+
+# Create a new README.md for the repository
+cat > README.md << 'EOF'
 # Home Assistant Add-on: Openpilot Installer Generator
 
 This repository contains a Home Assistant add-on for the openpilot installer generator.
@@ -22,7 +50,7 @@ Follow these steps to add this repository to your Home Assistant instance:
 
 1. Navigate in your Home Assistant frontend to **Settings** -> **Add-ons** -> **Add-on Store**.
 2. Click the menu in the top right corner and select **Repositories**.
-3. Add the URL `https://github.com/guii/hassio-addon-openpilot-installer` and click **Add**.
+3. Add the URL `https://github.com/yourusername/hassio-addon-openpilot-installer` and click **Add**.
 4. The add-on should now be visible in your add-on store.
 
 ## Support
@@ -40,3 +68,7 @@ You have several options to get them answered:
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 [forum]: https://community.home-assistant.io/
+EOF
+
+echo "Reorganization complete!"
+echo "The repository structure now follows Home Assistant's add-on repository requirements."

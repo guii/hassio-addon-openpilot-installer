@@ -19,6 +19,14 @@ if [ -z "$github_username" ]; then
     exit 1
 fi
 
+# Update repository.yaml with the correct username
+sed -i.bak "s|yourusername|$github_username|g" repository.yaml
+rm repository.yaml.bak
+
+# Update README.md with the correct username
+sed -i.bak "s|yourusername|$github_username|g" README.md
+rm README.md.bak
+
 echo ""
 echo "This script will help you create a GitHub repository for the add-on and provide"
 echo "instructions for adding it to Home Assistant."
@@ -38,15 +46,31 @@ echo "Visit: https://github.com/new"
 echo ""
 read -p "Press Enter when you've created the repository..."
 
-# Initialize git repository
-echo ""
-echo "Initializing git repository..."
-cd "$(dirname "$0")"
-git init
+# Initialize git repository if not already initialized
+if [ ! -d ".git" ]; then
+    echo ""
+    echo "Initializing git repository..."
+    git init
+fi
+
+# Add all files
 git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin "https://github.com/$github_username/hassio-addon-openpilot-installer.git"
+
+# Commit changes
+git commit -m "Initial commit of Openpilot Installer Generator add-on"
+
+# Set the branch name to main if not already set
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+if [ "$current_branch" != "main" ]; then
+    git branch -M main
+fi
+
+# Add remote if not already added
+remote_url=$(git remote get-url origin 2>/dev/null || echo "")
+if [ "$remote_url" != "https://github.com/$github_username/hassio-addon-openpilot-installer.git" ]; then
+    git remote remove origin 2>/dev/null || true
+    git remote add origin "https://github.com/$github_username/hassio-addon-openpilot-installer.git"
+fi
 
 echo ""
 echo "Ready to push to GitHub. Please make sure you have set up authentication."
