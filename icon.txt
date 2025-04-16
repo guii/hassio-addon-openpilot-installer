@@ -1,0 +1,12 @@
+# Icon Placeholder
+
+This is a placeholder for the add-on icon. In a real implementation, you would want to create a proper PNG image file named "icon.png" with dimensions of 128x128 pixels.
+
+The icon should represent the openpilot installer generator and be visually appealing in the Home Assistant add-on store.
+
+Suggested icon elements:
+- A car symbol
+- The openpilot logo
+- Installation/download iconography
+
+Replace this file with a real icon.png before publishing the add-on.

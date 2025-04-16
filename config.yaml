@@ -1,0 +1,26 @@
+name: "Openpilot Installer Generator"
+description: "Host the openpilot installer generator on your local network"
+version: "1.0.0"
+slug: "openpilot_installer"
+init: false
+arch:
+  - armhf
+  - aarch64
+  - amd64
+  - i386
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: "Web interface"
+options:
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+schema:
+  ssl: bool
+  certfile: str
+  keyfile: str
+webui: "http://[HOST]:[PORT:8099]"
+ingress: true
+ingress_port: 8099
+panel_icon: "mdi:car"
