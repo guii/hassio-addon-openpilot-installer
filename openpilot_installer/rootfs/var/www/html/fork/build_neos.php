@@ -1,4 +1,13 @@
 <?php
+// Enable full error reporting and logging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', '/var/log/apache2/php_errors.log');
+
+// Log script execution
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - build_neos.php started\n", FILE_APPEND);
+
 # Constants
 define("E", "271828182845904523536028747135266249775724709369995957496696762772407663035354759457138217852516642742746639193200305992181741359662904357290033429526059563073813232862794349076323382988075319525101901157383418793070215408914993488416750924476146066808226");  # placeholder for username
 define("PI", "314159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564");
@@ -6,7 +15,26 @@ define("NUM_USERNAME_CHARS", mb_strlen(E));
 define("NUM_LOADING_CHARS", mb_strlen(PI));
 define("BRANCH_START_STR", "--depth=1 openpilot");
 
-$installer_binary = file_get_contents(getcwd() . "/installer_openpilot_neos");  # load the unmodified installer
+# Load installer binary with error handling
+$binary_path = getcwd() . "/installer_openpilot_neos";
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Attempting to load binary from: " . $binary_path . "\n", FILE_APPEND);
+
+if (!file_exists($binary_path)) {
+    file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - ERROR: Binary file not found at: " . $binary_path . "\n", FILE_APPEND);
+    header("HTTP/1.1 500 Internal Server Error");
+    echo "Error: Installer binary not found. Please contact the administrator.";
+    exit;
+}
+
+$installer_binary = file_get_contents($binary_path);  # load the unmodified installer
+if ($installer_binary === false) {
+    file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - ERROR: Failed to read binary file: " . $binary_path . "\n", FILE_APPEND);
+    header("HTTP/1.1 500 Internal Server Error");
+    echo "Error: Failed to read installer binary. Please contact the administrator.";
+    exit;
+}
+
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Successfully loaded binary file: " . $binary_path . " (size: " . strlen($installer_binary) . " bytes)\n", FILE_APPEND);
 
 $username = $_GET["username"];  # might want to make sure these are coming from index.php and not anyone injecting random values
 $branch = $_GET["branch"];

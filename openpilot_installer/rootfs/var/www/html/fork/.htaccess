@@ -1,9 +1,14 @@
 # KeepAlive Off
 RewriteEngine on
-RewriteCond %{HTTPS} off
-RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Commenting out HTTPS redirection as it may cause issues in Home Assistant
+# RewriteCond %{HTTPS} off
+# RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-Header always set Content-Security-Policy: upgrade-insecure-requests
+# Commenting out CSP header as it may cause issues
+# Header always set Content-Security-Policy: upgrade-insecure-requests
+
+# Log access attempts
+RewriteRule .* - [E=REMOTE_ADDR:%{REMOTE_ADDR},L]
 
 # RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-f

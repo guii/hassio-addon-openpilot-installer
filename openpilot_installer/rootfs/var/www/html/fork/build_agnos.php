@@ -1,4 +1,13 @@
 <?php
+// Enable full error reporting and logging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', '/var/log/apache2/php_errors.log');
+
+// Log script execution
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - build_agnos.php started\n", FILE_APPEND);
+
 # Constants
 define("E", "27182818284590452353602874713526624977572470936999595");  # placeholder for username, includes "openpilot" repo name
 define("PI", "314159265358979323846264338327950288419");  # placeholder for loading msg
@@ -14,8 +23,26 @@ function fill_in_arg($placeholder, $replace_with, $binary, $padding, $arg_type) 
 }
 
 
-# Load installer binary
-$installer_binary = file_get_contents(getcwd() . "/installer_openpilot_agnos");  # load the unmodified installer
+# Load installer binary with error handling
+$binary_path = getcwd() . "/installer_openpilot_agnos";
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Attempting to load binary from: " . $binary_path . "\n", FILE_APPEND);
+
+if (!file_exists($binary_path)) {
+    file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - ERROR: Binary file not found at: " . $binary_path . "\n", FILE_APPEND);
+    header("HTTP/1.1 500 Internal Server Error");
+    echo "Error: Installer binary not found. Please contact the administrator.";
+    exit;
+}
+
+$installer_binary = file_get_contents($binary_path);  # load the unmodified installer
+if ($installer_binary === false) {
+    file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - ERROR: Failed to read binary file: " . $binary_path . "\n", FILE_APPEND);
+    header("HTTP/1.1 500 Internal Server Error");
+    echo "Error: Failed to read installer binary. Please contact the administrator.";
+    exit;
+}
+
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Successfully loaded binary file: " . $binary_path . " (size: " . strlen($installer_binary) . " bytes)\n", FILE_APPEND);
 
 $username = $_GET["username"];
 $branch = $_GET["branch"];

@@ -1,3 +1,15 @@
 #!/usr/bin/with-contenv bashio
 bashio::log.info "Starting Apache2..."
+
+# Ensure log directories exist with correct permissions
+mkdir -p /var/log/apache2
+chmod 777 /var/log/apache2
+touch /var/log/apache2/error.log /var/log/apache2/access.log /var/log/apache2/php_errors.log /var/log/apache2/debug.log
+chmod 666 /var/log/apache2/error.log /var/log/apache2/access.log /var/log/apache2/php_errors.log /var/log/apache2/debug.log
+
+# Ensure www directory has correct permissions
+chmod -R 755 /var/www/html
+chmod -R 777 /var/www/html/fork
+
+bashio::log.info "Apache2 starting with enhanced logging..."
 exec httpd -D FOREGROUND

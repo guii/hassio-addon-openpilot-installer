@@ -1,5 +1,12 @@
 <?php
-error_reporting(E_ALL ^ E_WARNING);
+// Enable full error reporting and logging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', '/var/log/apache2/php_errors.log');
+
+// Log script execution
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Script started\n", FILE_APPEND);
 
 # Constants
 define("USER_AGENT", $_SERVER['HTTP_USER_AGENT']);
@@ -26,12 +33,24 @@ function logData() {
     fclose($fp);
 }
 
+// Log request details
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Request: " . print_r($_SERVER, true) . "\n", FILE_APPEND);
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - GET: " . print_r($_GET, true) . "\n", FILE_APPEND);
+
 $url = "/";
 if (array_key_exists("url", $_GET)) {
     $url = $_GET["url"];
 }
 
-list($username, $branch, $loading_msg) = explode("/", $url);  # todo: clip these strings at the max length in index (to show up on the webpage)
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - URL: " . $url . "\n", FILE_APPEND);
+
+// Safer URL parsing with error handling
+$parts = explode("/", $url);
+$username = isset($parts[0]) ? $parts[0] : "";
+$branch = isset($parts[1]) ? $parts[1] : "";
+$loading_msg = isset($parts[2]) ? $parts[2] : "";
+
+file_put_contents('/var/log/apache2/debug.log', date('Y-m-d H:i:s') . " - Parsed: username=$username, branch=$branch, loading_msg=$loading_msg\n", FILE_APPEND);
 
 $username = substr(strtolower($username), 0, 39);  # max GH username length
 $branch = substr(trim($branch), 0, 255);  # max GH branch
