@@ -7,13 +7,13 @@ RewriteEngine on
 # Commenting out CSP header as it may cause issues
 # Header always set Content-Security-Policy: upgrade-insecure-requests
 
-# Log access attempts
-RewriteRule .* - [E=REMOTE_ADDR:%{REMOTE_ADDR},L]
+# Log access attempts - removed the [L] flag which was stopping other rules
+RewriteRule .* - [E=REMOTE_ADDR:%{REMOTE_ADDR}]
 
-# RewriteEngine on
+# URL rewriting for fork paths
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /fork/index.php?url=$1
+RewriteRule ^(.*)$ /fork/index.php?url=$1 [L]
 
 <Files "log.txt">
   Order Allow,Deny
