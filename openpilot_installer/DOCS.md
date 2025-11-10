@@ -1,89 +1,63 @@
-# Openpilot Installer Generator for Home Assistant
+# OpenPilot Installer Generator
 
-## What is openpilot?
+This Home Assistant add-on hosts a web interface for generating custom OpenPilot installer binaries.
 
-[Openpilot](https://github.com/commaai/openpilot) is an open source driver assistance system developed by comma.ai. It performs the functions of Automated Lane Centering and Adaptive Cruise Control for over 200 supported car makes and models.
+## Features
 
-## What does this add-on do?
+- **Dual Installer Support**: Choose between Qt (legacy) and Raylib (modern) installers
+- **Custom Fork Support**: Generate installers for any OpenPilot fork
+- **Branch Selection**: Install from any branch of your chosen fork
+- **Custom Loading Messages**: Personalize the installation experience
 
-This add-on hosts the openpilot installer generator on your local network through Home Assistant. The installer generator creates custom installers for different GitHub forks of the openpilot project, allowing you to easily install custom versions of openpilot on your comma device.
+## Installer Types
+
+### Qt Installer (Legacy)
+- **Use for**: AGNOS versions ≤14.3
+- **Dependencies**: Qt5 libraries (included in older AGNOS)
+- **UI**: Traditional Qt-based interface
+- **File**: `installer_openpilot_agnos`
+
+### Raylib Installer (Modern)
+- **Use for**: AGNOS versions >14.3
+- **Dependencies**: Raylib graphics library (statically linked)
+- **UI**: Modern graphics with smooth animations
+- **File**: `installer_openpilot_agnos_raylib`
+
+## Usage
+
+1. **Web Interface**: Navigate to the add-on's web interface
+2. **Enter Fork Details**: Provide username, repository, and branch
+3. **Choose Installer Type**: Select Qt (legacy) or Raylib (modern) based on your AGNOS version
+4. **Download**: Get your custom installer binary
+
+### URL Format
+
+You can also use direct URLs during device setup:
+
+```
+http://your-ha-ip:8099/username/repo/branch
+```
+
+This will automatically serve the appropriate installer based on the device's user agent.
 
 ## Configuration
 
-### Add-on Configuration
+No additional configuration is required. The add-on will:
 
-```yaml
-ssl: false
-certfile: fullchain.pem
-keyfile: privkey.pem
-```
+1. Build both installer types during container startup
+2. Serve the web interface on port 8099
+3. Generate custom binaries on demand
 
-#### Option: `ssl`
+## Supported Devices
 
-Enables/Disables SSL (HTTPS) on the web interface. Set it to `true` to enable it, `false` otherwise.
+- **NEOS**: Android-based comma devices
+- **AGNOS**: Linux-based comma devices (both legacy and modern versions)
 
-#### Option: `certfile`
+## Technical Details
 
-The certificate file to use for SSL.
+The add-on uses string replacement to customize pre-compiled installer binaries with:
+- GitHub repository URL
+- Branch name
+- Custom loading message
 
-#### Option: `keyfile`
-
-The private key file to use for SSL.
-
-### Network Configuration
-
-The add-on exposes the web interface on port 8099.
-
-## How to use
-
-1. Start the add-on
-2. Open the web interface at `http://your-home-assistant:8099` or click on the "Open Web UI" button in the add-on page
-3. Enter the GitHub username and branch of the openpilot fork you want to install
-4. Download the installer or use the URL on your comma device during setup
-
-### Using on a comma device
-
-During the setup process on your comma device, you can enter the URL of your installer generator in the following format:
-
-```
-http://your-home-assistant:8099/username/branch
-```
-
-For example:
-```
-http://homeassistant.local:8099/commaai/release3
-```
-
-This will automatically generate and serve the installer for the specified fork and branch.
-
-### Common forks
-
-- `commaai/release3` - Official openpilot release for comma three
-- `commaai/release2` - Official openpilot release for comma two
-- `dragonpilot` - DragonPilot fork
-- `sunnypilot` - SunnyPilot fork
-- `sshane` - Stock Additions fork
-
-## Troubleshooting
-
-### The add-on fails to start
-
-Check the add-on logs for any error messages. Common issues include:
-
-- Port 8099 is already in use by another service
-- PHP or Nginx configuration issues
-
-### The web interface is not accessible
-
-- Make sure the add-on is running
-- Check that port 8099 is not blocked by your firewall
-- Try accessing the web interface through the Home Assistant UI by clicking on the "Open Web UI" button
-
-### The installer fails to download
-
-- Check that the binary files are properly copied to the container
-- Ensure the PHP process has permission to read the binary files
-
-## Support
-
-If you have any issues or questions, please open an issue on GitHub.
+Both installer types use the same customization mechanism but target different AGNOS versions.

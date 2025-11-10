@@ -131,6 +131,9 @@ button:active[name="download_neos"] {border-radius: 4px; border: 5px; padding: 1
 
 button[name="download_agnos"] {background-color: #ace6df; border-radius: 4px; border: 5px; padding: 10px 12px; box-shadow:0px 4px 0px #80c2ba; display: inline-block; color: #30323D;top: 1px; outline: 0px transparent !important;}
 button:active[name="download_agnos"] {border-radius: 4px; border: 5px; padding: 10px 12px; box-shadow:0px 2px 2px #89c7c7; background-color: #89c7c7; display: inline-block; top: 1px, outline: 0px transparent !important;}
+
+button[name="download_agnos_raylib"] {background-color: #ffb347; border-radius: 4px; border: 5px; padding: 10px 12px; box-shadow:0px 4px 0px #e6a040; display: inline-block; color: #30323D;top: 1px; outline: 0px transparent !important;}
+button:active[name="download_agnos_raylib"] {border-radius: 4px; border: 5px; padding: 10px 12px; box-shadow:0px 2px 2px #e6a040; background-color: #e6a040; display: inline-block; top: 1px, outline: 0px transparent !important;}
 </style>
 <title>fork installer generator</title>
 <link rel="icon" type="image/x-icon" href="' . BASE_DIR . '/favicon.ico">
@@ -165,9 +168,11 @@ echo '<html>
     <body>
         <form method="post">
         <button class="button" name="download_neos">Download Android Installer Binary</button>
-        <button class="button" name="download_agnos">Download AGNOS Installer Binary</button>
+        <button class="button" name="download_agnos">Download AGNOS Installer Binary (Qt - Legacy)</button>
+        <button class="button" name="download_agnos_raylib">Download AGNOS Installer Binary (Raylib - Modern)</button>
     </form>
     <h5>Or enter this URL on the setup screen on your device.</h5>
+    <h6>💡 Use Raylib version for AGNOS >14.3, Qt version for older AGNOS versions</h6>
     </body>
 </html>';
 
@@ -177,6 +182,10 @@ if(array_key_exists('download_neos', $_POST)) {
 }
 if(array_key_exists('download_agnos', $_POST)) {
     header("Location: " . BASE_DIR . "/build_agnos.php?username=" . $username . "&repo=" . $repo_name . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    exit;
+}
+if(array_key_exists('download_agnos_raylib', $_POST)) {
+    header("Location: " . BASE_DIR . "/build_agnos_raylib.php?username=" . $username . "&repo=" . $repo_name . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
     exit;
 }
 ?>
